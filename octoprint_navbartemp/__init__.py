@@ -158,9 +158,7 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         self._logger.debug("response from TempSensor: %s" % p)
         
         match = re.search('=(.*)\'', p)
-        if not match:
-            self.isRaspi = False
-        else:
+        if match:
             temp = match.group(1)
             self._logger.debug("match: %s" % temp)
             self._plugin_manager.send_plugin_message(self._identifier, dict(airtemp=temp))
