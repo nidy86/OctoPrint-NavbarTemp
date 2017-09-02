@@ -5,6 +5,7 @@ $(function() {
         self.navBarTempModel = parameters[0];
         self.global_settings = parameters[1];
         self.raspiTemp = ko.observable();
+        self.airTemp = ko.observable();
         self.isRaspi = ko.observable(false);
 
         self.onBeforeBinding = function () {
@@ -24,6 +25,7 @@ $(function() {
             }
 
             self.raspiTemp(_.sprintf("Raspi: %.1f&deg;C", data.raspitemp));
+            self.airTemp(_.sprintf("Luft: %.1f&deg;C", data.airtemp));
         };
     }
 

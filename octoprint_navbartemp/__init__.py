@@ -7,8 +7,78 @@ __copyright__ = "Copyright (C) 2014 Jarek Szczepanski - Released under terms of 
 
 import octoprint.plugin
 from octoprint.util import RepeatedTimer
-import sys
+import sys, getopt
 import re
+import os                                                  # import os module
+import glob                                                # import glob module
+import time                                                # import time module
+import RPi.GPIO as GPIO
+
+class RelaySwitch():
+ 
+    def __init__(self,bcmPort):
+        self.RELAY_ID_GPIO = bcmPort
+
+    def on(self):
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM) # GPIO Nummern statt Board Nummern
+        
+        GPIO.setup(self.RELAY_ID_GPIO, GPIO.OUT) # GPIO Modus zuweisen
+        GPIO.output(self.RELAY_ID_GPIO, GPIO.LOW) # an
+    
+    def off(self):
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM) # GPIO Nummern statt Board Nummern
+        
+        GPIO.setup(self.RELAY_ID_GPIO, GPIO.OUT) # GPIO Modus zuweisen
+        GPIO.output(self.RELAY_ID_GPIO, GPIO.LOW) # an
+        GPIO.output(self.RELAY_ID_GPIO, GPIO.HIGH) # aus
+
+        GPIO.cleanup()
+        
+    def close(self):
+        GPIO.cleanup()
+
+class TempSensor():
+    def __init__(self):
+        
+        os.system('modprobe w1-gpio')                              # load one wire communication device kernel modules
+        os.system('modprobe w1-therm')                                                 
+        base_dir = '/sys/bus/w1/devices/'                          # point to the address
+        self.device_folder = glob.glob(base_dir + '28*')[0]             # find device with address starting from 28*
+        self.device_file = self.device_folder + '/w1_slave'                  # store the details
+        
+    def read_temp_raw(self):
+       f = open(self.device_file, 'r')
+       lines = f.readlines()                                   # read the device details
+       f.close()
+       return lines
+
+    def read_temp(self):
+       lines = self.read_temp_raw()
+       while lines[0].strip()[-3:] != 'YES':                   # ignore first line
+          time.sleep(0.2)
+          lines = self.read_temp_raw()
+       equals_pos = lines[1].find('t=')                        # find temperature in the details
+       if equals_pos != -1:
+          temp_string = lines[1][equals_pos+2:]
+          temp_c = float(temp_string) / 1000.0                 # convert to Celsius
+          return temp_c
+    
+    def show(self):
+        print(self.read_temp())
+        
+    def switchOnOver(self,relay,temp):
+        if self.read_temp()<temp :
+           relay.on()
+        else:
+           relay.off()
+           
+    def switchOnUnder(self,relay,temp):
+        if self.read_temp()<temp :
+           relay.on()
+        else:
+           relay.off()
 
 class NavBarPlugin(octoprint.plugin.StartupPlugin,
                    octoprint.plugin.TemplatePlugin,
@@ -24,6 +94,9 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
     def on_after_startup(self):
         self.displayRaspiTemp = self._settings.get(["displayRaspiTemp"])
         self._logger.debug("displayRaspiTemp: %s" % self.displayRaspiTemp)
+        
+        self.displayAirTemp = self._settings.get(["displayAirTemp"])
+        self._logger.debug("displayAirTemp: %s" % self.displayAirTemp)
 
         if sys.platform == "linux2":
             with open('/proc/cpuinfo', 'r') as infile:
@@ -52,9 +125,38 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         self._logger.debug("is Raspberry Pi? - %s" % self.isRaspi)
 
     def startTimer(self, interval):
-        self._checkTempTimer = RepeatedTimer(interval, self.checkRaspiTemp, None, None, True)
+        self._checkTempTimer = RepeatedTimer(interval, self.checkAllTemperatures, None, None, True)
         self._checkTempTimer.start()
+    
+    def checkAllTemperatures(self):
+        self.checkAirTemp()
+        self.checkRaspiTemp()
+    
+    def checkAirTemp(self):
+        airTemp = TempSensor()
+        
+        self._logger.debug("Checking air temperature of box")
+        
+        if sys.platform == "linux2":
+            p = "temp=%s'C" % airTemp.read_temp()
 
+        elif self.debugMode:
+            import random
+            def randrange_float(start, stop, step):
+                return random.randint(0, int((stop - start) / step)) * step + start
+            p = "temp=%s'C" % randrange_float(5, 60, 0.1)
+
+        self._logger.debug("response from sarge: %s" % p)
+
+        match = re.search('=(.*)\'', p)
+        if not match:
+            self.isRaspi = False
+        else:
+            temp = match.group(1)
+            self._logger.debug("match: %s" % temp)
+            self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, airtemp=temp))
+        
+    
     def checkRaspiTemp(self):
         from sarge import run, Capture
 
@@ -83,12 +185,13 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
 
 	##~~ SettingsPlugin
     def get_settings_defaults(self):
-        return dict(displayRaspiTemp = self.displayRaspiTemp)
+        return dict(displayRaspiTemp = self.displayRaspiTemp,displayAirTemp = self.displayAirTemp)
 
     def on_settings_save(self, data):
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
 
         self.displayRaspiTemp = self._settings.get(["displayRaspiTemp"])
+        self.displayAirTemp = self._settings.get(["displayAirTemp"])
 
         if self.displayRaspiTemp:
             interval = 5.0 if self.debugMode else 30.0

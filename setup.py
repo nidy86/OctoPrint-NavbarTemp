@@ -8,9 +8,9 @@ plugin_package = "octoprint_%s" % plugin_identifier
 plugin_name = "OctoPrint-NavbarTemp"
 plugin_version = "0.8"
 plugin_description = "Displays temperatures on navbar"
-plugin_author = "Jarek Szczepanski"
+plugin_author = "Patrik Niederleimbacher"
 plugin_author_email = "imrahil@imrahil.com"
-plugin_url = "https://github.com/imrahil/OctoPrint-NavbarTemp"
+plugin_url = "https://github.com/nidy86/OctoPrint-NavbarTemp.git"
 plugin_license = "AGPLv3"
 plugin_additional_data = []
 
