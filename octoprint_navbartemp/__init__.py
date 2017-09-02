@@ -135,14 +135,38 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         self._checkTempTimer.start()
     
     def checkAllTemperatures(self):
-        #airTemp = self.TempSensor()
+        self.checkAirTemp()
+        self.checkRaspiTemp()
+    
+    def checkAirTemp(self):
+        airTemp = self.TempSensor()
         
-        #self._logger.debug("Checking air temperature of box")
+        self._logger.debug("Checking air temperature of box")
         
-        atemp = 123.45
-        #airTemp.read_temp()
-        #self._logger.debug("response from TempSensor: %s" % atemp)
+        temp = airTemp.read_temp()
         
+        if sys.platform == "linux2":
+            p = run("/home/pi/scripts/prntScritps/scripts/airtemp.sh", stdout=Capture())
+            p = "temp=%s'C" % p.stdout.text
+
+        elif self.debugMode:
+            import random
+            def randrange_float(start, stop, step):
+                return random.randint(0, int((stop - start) / step)) * step + start
+            p = "temp=%s'C" % randrange_float(5, 60, 0.1)
+
+        self._logger.debug("response from TempSensor: %s" % p)
+        
+        match = re.search('=(.*)\'', p)
+        if not match:
+            self.isRaspi = False
+        else:
+            temp = match.group(1)
+            self._logger.debug("match: %s" % temp)
+            self._plugin_manager.send_plugin_message(self._identifier, dict(airtemp=temp))
+        
+    
+    def checkRaspiTemp(self):
         from sarge import run, Capture
 
         self._logger.debug("Checking Raspberry Pi internal temperature")
@@ -165,8 +189,7 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         else:
             temp = match.group(1)
             self._logger.debug("match: %s" % temp)
-            self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, raspitemp=temp, airtemp=atemp))
-        
+            self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, raspitemp=temp))
 
 
 	##~~ SettingsPlugin

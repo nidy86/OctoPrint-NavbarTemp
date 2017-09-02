@@ -23,9 +23,13 @@ $(function() {
             } else {
                 self.isRaspi(true);
             }
-
-            self.raspiTemp(_.sprintf("Raspi: %.1f&deg;C", data.raspitemp));
-            self.airTemp(_.sprintf("Luft: %.1f&deg;C", data.airtemp));
+            if(data.hasOwnProperty("raspitemp")){
+            	self.raspiTemp(_.sprintf("Raspi: %.1f&deg;C", data.raspitemp));
+            }
+            if(data.hasOwnProperty("airtemp")){
+            	self.airTemp(_.sprintf("Luft: %.1f&deg;C", data.airtemp));
+            }
+            
         };
     }
 
