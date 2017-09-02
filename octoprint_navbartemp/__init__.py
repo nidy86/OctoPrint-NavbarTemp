@@ -139,11 +139,8 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         self.checkRaspiTemp()
     
     def checkAirTemp(self):
-        airTemp = self.TempSensor()
         
         self._logger.debug("Checking air temperature of box")
-        
-        temp = airTemp.read_temp()
         
         if sys.platform == "linux2":
             p = run("/home/pi/scripts/prntScritps/scripts/airtemp.sh", stdout=Capture())
