@@ -135,12 +135,13 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         self._checkTempTimer.start()
     
     def checkAllTemperatures(self):
-        airTemp = self.TempSensor()
+        #airTemp = self.TempSensor()
         
-        self._logger.debug("Checking air temperature of box")
+        #self._logger.debug("Checking air temperature of box")
         
-        atemp = airTemp.read_temp()
-        self._logger.debug("response from TempSensor: %s" % atemp)
+        atemp = 123.45
+        #airTemp.read_temp()
+        #self._logger.debug("response from TempSensor: %s" % atemp)
         
         from sarge import run, Capture
 
