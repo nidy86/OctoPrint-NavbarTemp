@@ -143,8 +143,10 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         
         self._logger.debug("Checking air temperature of box")
         
+        temp = airTemp.read_temp()
+        
         if sys.platform == "linux2":
-            p = "temp=%s'C" % airTemp.read_temp()
+            p = "temp=%s'C" % temp
 
         elif self.debugMode:
             import random
@@ -152,15 +154,17 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
                 return random.randint(0, int((stop - start) / step)) * step + start
             p = "temp=%s'C" % randrange_float(5, 60, 0.1)
 
-        self._logger.debug("response from sarge: %s" % p)
-
-        match = re.search('=(.*)\'', p)
-        if not match:
-            self.isRaspi = False
-        else:
-            temp = match.group(1)
-            self._logger.debug("match: %s" % temp)
-            self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, airtemp=temp))
+        self._logger.debug("response from TempSensor: %s" % p)
+        
+        self._plugin_manager.send_plugin_message(self._identifier, dict(airtemp=temp))
+        
+        #match = re.search('=(.*)\'', p)
+        #if not match:
+        #    self.isRaspi = False
+        #else:
+        #    temp = match.group(1)
+        #    self._logger.debug("match: %s" % temp)
+        #    self._plugin_manager.send_plugin_message(self._identifier, dict(airtemp=temp))
         
     
     def checkRaspiTemp(self):
