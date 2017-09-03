@@ -27,7 +27,8 @@ $(function() {
             	self.raspiTemp(_.sprintf("Raspi: %.1f&deg;C", data.raspitemp));
             }
             if(data.hasOwnProperty("airtemp")){
-            	self.airTemp(_.sprintf("Luft: %.1f&deg;C", data.airtemp));
+            	//%.1f
+            	self.airTemp(_.sprintf("Luft: %s&deg;C", data.airtemp));
             }
             
         };
@@ -41,13 +42,8 @@ $(function() {
 });
 
 function formatBarTemperature(toolName, actual, target) {
-	try {
-		var output = toolName + ": " + _.sprintf("%.1f&deg;C", actual);
-	} catch (e) {
-		var output = toolName + ": " + actual;
-	}
-    
-
+	var output = toolName + ": " + _.sprintf("%.1f&deg;C", actual);
+	
     if (target) {
         var sign = (target >= actual) ? " \u21D7 " : " \u21D8 ";
         output += sign + _.sprintf("%.1f&deg;C", target);
