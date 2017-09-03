@@ -143,7 +143,7 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
             p = run("/opt/vc/bin/vcgencmd measure_temp", stdout=Capture())
             p = p.stdout.text
             ap = run("/home/pi/scripts/prntScritps/scripts/airtemp.sh", stdout=Capture())
-            atemp = floag(ap.stdout.text)
+            atemp = float(ap.stdout.text)
 
         elif self.debugMode:
             import random
