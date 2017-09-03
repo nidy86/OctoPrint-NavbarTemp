@@ -143,7 +143,7 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
             p = run("/opt/vc/bin/vcgencmd measure_temp", stdout=Capture())
             p = p.stdout.text
             ap = run("/home/pi/scripts/prntScritps/scripts/airtemp.sh", stdout=Capture())
-            atemp = float(ap.stdout.text)
+            atemp = ap.stdout.text
 
         elif self.debugMode:
             import random
@@ -164,7 +164,7 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
             if self.displayAirTemp and self.displayRaspiTemp:
                 self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, raspitemp=temp, airtemp=atemp))
             elif self.displayAirTemp:
-                self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=false, airtemp=atemp))
+                self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, airtemp=atemp))
             elif self.displayRaspiTemp:
                 self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, raspitemp=temp))
     

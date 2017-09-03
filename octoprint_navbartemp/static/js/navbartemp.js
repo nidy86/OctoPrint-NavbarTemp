@@ -41,7 +41,12 @@ $(function() {
 });
 
 function formatBarTemperature(toolName, actual, target) {
-    var output = toolName + ": " + _.sprintf("%.1f&deg;C", actual);
+	try {
+		var output = toolName + ": " + _.sprintf("%.1f&deg;C", actual);
+	} catch (e) {
+		var output = toolName + ": " + actual;
+	}
+    
 
     if (target) {
         var sign = (target >= actual) ? " \u21D7 " : " \u21D8 ";
