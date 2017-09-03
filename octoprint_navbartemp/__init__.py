@@ -125,7 +125,7 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
                 self.startTimer(30.0)
         elif self.debugMode:
             self.isRaspi = True
-            if self.displayRaspiTemp:
+            if self.displayRaspiTemp or self.displayAirTemp:
                 self.startTimer(5.0)
 
         self._logger.debug("is Raspberry Pi? - %s" % self.isRaspi)
@@ -161,7 +161,12 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         else:
             temp = match.group(1)
             self._logger.debug("match: %s" % temp)
-            self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, raspitemp=temp, airtemp=atemp))
+            if self.displayAirTemp and self.displayRaspiTemp:
+                self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, raspitemp=temp, airtemp=atemp))
+            elif self.displayAirTemp:
+                self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=false, airtemp=atemp))
+            elif self.displayRaspiTemp:
+                self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, raspitemp=temp))
     
     def checkAirTemp(self):
         
