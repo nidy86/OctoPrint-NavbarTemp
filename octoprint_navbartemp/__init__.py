@@ -143,14 +143,14 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
             p = run("/opt/vc/bin/vcgencmd measure_temp", stdout=Capture())
             p = p.stdout.text
             ap = run("/home/pi/scripts/prntScritps/scripts/airtemp.sh", stdout=Capture())
-            atemp = "%s" % ap.stdout.text
+            atemp = floag(ap.stdout.text)
 
         elif self.debugMode:
             import random
             def randrange_float(start, stop, step):
                 return random.randint(0, int((stop - start) / step)) * step + start
             p = "temp=%s'C" % randrange_float(5, 60, 0.1)
-            atemp = "%s" % randrange_float(-10, 40, 0.1)
+            atemp = randrange_float(-10, 40, 0.1)
 
         self._logger.debug("response from sarge: %s" % p)
         self._logger.debug("response from airtemp: %s" % atemp)
