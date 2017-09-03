@@ -135,8 +135,33 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         self._checkTempTimer.start()
     
     def checkAllTemperatures(self):
-        self.checkAirTemp()
-        self.checkRaspiTemp()
+        from sarge import run, Capture
+
+        self._logger.debug("Checking Raspberry Pi internal temperature")
+
+        if sys.platform == "linux2":
+            p = run("/opt/vc/bin/vcgencmd measure_temp", stdout=Capture())
+            p = p.stdout.text
+            ap = run("/home/pi/scripts/prntScritps/scripts/airtemp.sh", stdout=Capture())
+            atemp = "%s" % ap.stdout.text
+
+        elif self.debugMode:
+            import random
+            def randrange_float(start, stop, step):
+                return random.randint(0, int((stop - start) / step)) * step + start
+            p = "temp=%s'C" % randrange_float(5, 60, 0.1)
+            atemp = "%s" % randrange_float(-10, 40, 0.1)
+
+        self._logger.debug("response from sarge: %s" % p)
+        self._logger.debug("response from airtemp: %s" % atemp)
+
+        match = re.search('=(.*)\'', p)
+        if not match:
+            self.isRaspi = False
+        else:
+            temp = match.group(1)
+            self._logger.debug("match: %s" % temp)
+            self._plugin_manager.send_plugin_message(self._identifier, dict(israspi=self.isRaspi, raspitemp=temp, airtemp=atemp))
     
     def checkAirTemp(self):
         
