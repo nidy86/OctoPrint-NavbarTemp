@@ -20,12 +20,14 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
                    octoprint.plugin.TemplatePlugin,
                    octoprint.plugin.AssetPlugin,
                    octoprint.plugin.SettingsPlugin):
-               
+
     def __init__(self):
         self.isRaspi = False
         self.debugMode = False      # to simulate temp on Win/Mac
         self.displayRaspiTemp = True
         self.displayAirTemp = True
+        self.maxAirTemp = True
+        self.relayPinForAirTemp = True
         self._checkTempTimer = None
 
     def on_after_startup(self):
