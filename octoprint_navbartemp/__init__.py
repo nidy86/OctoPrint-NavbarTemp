@@ -227,7 +227,7 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         self.displayRaspiTemp = self._settings.get(["displayRaspiTemp"])
         self.displayAirTemp = self._settings.get(["displayAirTemp"])
 
-        if self.displayRaspiTemp:
+        if self.displayRaspiTemp or self.displayAirTemp:
             interval = 5.0 if self.debugMode else 30.0
             self.startTimer(interval)
         else:
