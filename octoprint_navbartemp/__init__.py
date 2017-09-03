@@ -20,72 +20,6 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
                    octoprint.plugin.TemplatePlugin,
                    octoprint.plugin.AssetPlugin,
                    octoprint.plugin.SettingsPlugin):
-
-    class RelaySwitch():
- 
-        def __init__(self,bcmPort):
-            self.RELAY_ID_GPIO = bcmPort
-    
-        def on(self):
-            GPIO.setwarnings(False)
-            GPIO.setmode(GPIO.BCM) # GPIO Nummern statt Board Nummern
-            
-            GPIO.setup(self.RELAY_ID_GPIO, GPIO.OUT) # GPIO Modus zuweisen
-            GPIO.output(self.RELAY_ID_GPIO, GPIO.LOW) # an
-        
-        def off(self):
-            GPIO.setwarnings(False)
-            GPIO.setmode(GPIO.BCM) # GPIO Nummern statt Board Nummern
-            
-            GPIO.setup(self.RELAY_ID_GPIO, GPIO.OUT) # GPIO Modus zuweisen
-            GPIO.output(self.RELAY_ID_GPIO, GPIO.LOW) # an
-            GPIO.output(self.RELAY_ID_GPIO, GPIO.HIGH) # aus
-    
-            GPIO.cleanup()
-            
-        def close(self):
-            GPIO.cleanup()
-    
-    class TempSensor():
-        def __init__(self):
-            
-            os.system('modprobe w1-gpio')                              # load one wire communication device kernel modules
-            os.system('modprobe w1-therm')                                                 
-            base_dir = '/sys/bus/w1/devices/'                          # point to the address
-            self.device_folder = glob.glob(base_dir + '28*')[0]             # find device with address starting from 28*
-            self.device_file = self.device_folder + '/w1_slave'                  # store the details
-            
-        def read_temp_raw(self):
-           f = open(self.device_file, 'r')
-           lines = f.readlines()                                   # read the device details
-           f.close()
-           return lines
-    
-        def read_temp(self):
-           lines = self.read_temp_raw()
-           while lines[0].strip()[-3:] != 'YES':                   # ignore first line
-              time.sleep(0.2)
-              lines = self.read_temp_raw()
-           equals_pos = lines[1].find('t=')                        # find temperature in the details
-           if equals_pos != -1:
-              temp_string = lines[1][equals_pos+2:]
-              temp_c = float(temp_string) / 1000.0                 # convert to Celsius
-              return temp_c
-        
-        def show(self):
-            print(self.read_temp())
-            
-        def switchOnOver(self,relay,temp):
-            if self.read_temp()<temp :
-               relay.on()
-            else:
-               relay.off()
-               
-        def switchOnUnder(self,relay,temp):
-            if self.read_temp()<temp :
-               relay.on()
-            else:
-               relay.off()
                
     def __init__(self):
         self.isRaspi = False
@@ -100,6 +34,9 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         
         self.displayAirTemp = self._settings.get(["displayAirTemp"])
         self._logger.debug("displayAirTemp: %s" % self.displayAirTemp)
+        
+        self.maxAirTemp = self._settings.get(["maxAirTemp"])
+        self.relayPinForAirTemp = self._settings.get(["relayPinForAirTemp"])
 
         if sys.platform == "linux2":
             with open('/proc/cpuinfo', 'r') as infile:
@@ -219,13 +156,15 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
 
 	##~~ SettingsPlugin
     def get_settings_defaults(self):
-        return dict(displayRaspiTemp = self.displayRaspiTemp, displayAirTemp = self.displayAirTemp)
+        return dict(displayRaspiTemp = self.displayRaspiTemp, displayAirTemp = self.displayAirTemp, maxAirTemp = self.maxAirTemp, relayPinForAirTemp = self.relayPinForAirTemp)
 
     def on_settings_save(self, data):
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
 
         self.displayRaspiTemp = self._settings.get(["displayRaspiTemp"])
         self.displayAirTemp = self._settings.get(["displayAirTemp"])
+        self.maxAirTemp = self._settings.get(["maxAirTemp"])
+        self.relayPinForAirTemp = self._settings.get(["relayPinForAirTemp"])
 
         if self.displayRaspiTemp or self.displayAirTemp:
             interval = 5.0 if self.debugMode else 30.0

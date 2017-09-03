@@ -10,12 +10,13 @@
             <label class="checkbox">
                 <input type="checkbox" data-bind="checked: settings.displayAirTemp"> Display air temperature in box
             </label>
-            <label class="checkbox">
-                max. Temperature without running fan in box: <input type="text" data-bind="value: settings.maxAirTemp">&deg;C
+            <label class="textfield">
+                BCM-Pin-ID for Relay <input type="number" data-bind="value: settings.relayPinForAirTemp" default="95">
             </label>
-            <label class="checkbox">
-                BCM-Pin-ID for Relay <input type="text" data-bind="value: settings.relayPinForAirTemp">
-            </label>
+        </div>
+        <label class="control-label">{{ _('max. Temperature without fan') }}</label>
+        <div class="controls">
+        	<input type="number" class="input-block-level" data-bind="value: settings.maxAirTemp" default="18">
         </div>
     </div>
 </form>
