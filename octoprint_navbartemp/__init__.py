@@ -23,7 +23,7 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
 
     def __init__(self):
         self.isRaspi = False
-        self.debugMode = False      # to simulate temp on Win/Mac
+        self.debugMode = True      # to simulate temp on Win/Mac
         self.displayRaspiTemp = True
         self.displayAirTemp = True
         #self.maxAirTemp = True
