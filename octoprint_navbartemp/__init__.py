@@ -26,8 +26,8 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         self.debugMode = False      # to simulate temp on Win/Mac
         self.displayRaspiTemp = True
         self.displayAirTemp = True
-        self.maxAirTemp = True
-        self.relayPinForAirTemp = True
+        #self.maxAirTemp = True
+        #self.relayPinForAirTemp = True
         self._checkTempTimer = None
 
     def on_after_startup(self):
@@ -37,8 +37,8 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
         self.displayAirTemp = self._settings.get(["displayAirTemp"])
         self._logger.debug("displayAirTemp: %s" % self.displayAirTemp)
         
-        self.maxAirTemp = self._settings.get(["maxAirTemp"])
-        self.relayPinForAirTemp = self._settings.get(["relayPinForAirTemp"])
+        #self.maxAirTemp = self._settings.get(["maxAirTemp"])
+        #self.relayPinForAirTemp = self._settings.get(["relayPinForAirTemp"])
 
         if sys.platform == "linux2":
             with open('/proc/cpuinfo', 'r') as infile:
@@ -158,15 +158,15 @@ class NavBarPlugin(octoprint.plugin.StartupPlugin,
 
 	##~~ SettingsPlugin
     def get_settings_defaults(self):
-        return dict(displayRaspiTemp = self.displayRaspiTemp, displayAirTemp = self.displayAirTemp, maxAirTemp = self.maxAirTemp, relayPinForAirTemp = self.relayPinForAirTemp)
+        return dict(displayRaspiTemp = self.displayRaspiTemp, displayAirTemp = self.displayAirTemp )#, maxAirTemp = self.maxAirTemp, relayPinForAirTemp = self.relayPinForAirTemp)
 
     def on_settings_save(self, data):
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
 
         self.displayRaspiTemp = self._settings.get(["displayRaspiTemp"])
         self.displayAirTemp = self._settings.get(["displayAirTemp"])
-        self.maxAirTemp = self._settings.get(["maxAirTemp"])
-        self.relayPinForAirTemp = self._settings.get(["relayPinForAirTemp"])
+        #self.maxAirTemp = self._settings.get(["maxAirTemp"])
+        #self.relayPinForAirTemp = self._settings.get(["relayPinForAirTemp"])
 
         if self.displayRaspiTemp or self.displayAirTemp:
             interval = 5.0 if self.debugMode else 30.0
